@@ -63,7 +63,7 @@ public class UserService(
         }
     }
 
-    public async Task<string?> LoginAsync(LoginDto loginDto)
+    public async Task<AuthResult> LoginAsync(LoginDto loginDto)
     {
         try
         {
@@ -73,7 +73,12 @@ public class UserService(
             if (user == null)
             {
                 logger.LogWarning("Login attempt with non-existent email: {Email}", loginDto.Email);
-                return null;
+
+                return new AuthResult
+                {
+                    Success = false,
+                    Message = "Non-existent email email"
+                };
             }
 
 
@@ -83,18 +88,34 @@ public class UserService(
 
                 logger.LogInformation("User {Email} logged in successfully", loginDto.Email);
                 var token = jwtHelper.GenerateToken(user);
-                return token;
+
+                return new AuthResult
+                {
+                    Success = true,
+                    Token = token,
+                    User = user,
+                    Message = "Login successful"
+                };
+
             }
             else
             {
                 logger.LogWarning("Failed login attempt for {Email}", loginDto.Email);
-                return null;
+                return new AuthResult
+                {
+                    Success = false,
+                    Message = "Invalid password"
+                };
             }
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error occurred during login for {Email}", loginDto.Email);
-            return null;
+            return new AuthResult
+            {
+                Success = false,
+                Message = "An error occurred during login"
+            };
         }
     }
 

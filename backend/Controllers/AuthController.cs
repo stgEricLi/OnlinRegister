@@ -65,20 +65,23 @@ public class AuthController(
                 return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
             }
 
-            var token = await userService.LoginAsync(loginDto);
+            var result = await userService.LoginAsync(loginDto);
 
-            if (!string.IsNullOrEmpty(token))
+            if (result.Success)
             {
-                logger.LogInformation("User logged in successfully: {Email}", loginDto.Email);
-                return Ok(new { Token = token, Message = "Login successful" });
+                return Ok(result);
             }
 
-            return Unauthorized(new { Message = "Invalid credentials" });
+            return Unauthorized(result);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error in Login endpoint");
-            return StatusCode(500, new { Message = "Internal server error" });
+            return StatusCode(500, new AuthResult
+            {
+                Success = false,
+                Message = "An error occurred during login"
+            });
         }
     }
 }
