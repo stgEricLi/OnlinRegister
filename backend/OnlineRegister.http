@@ -1,0 +1,6 @@
+@OnlineRegister_HostAddress = http://localhost:5147
+
+GET {{OnlineRegister_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
