@@ -8,6 +8,12 @@ public class ExceptionHandlingMiddleware
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
+    // Cache JsonSerializerOptions to avoid creating new instances
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
     public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
     {
         _next = next;
@@ -59,10 +65,7 @@ public class ExceptionHandlingMiddleware
                 break;
         }
 
-        var jsonResponse = JsonSerializer.Serialize(response, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+        var jsonResponse = JsonSerializer.Serialize(response, JsonOptions);
 
         await context.Response.WriteAsync(jsonResponse);
     }

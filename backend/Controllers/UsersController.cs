@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using OnlineRegister.Interfaces;
 
 namespace OnlineRegister.Controllers;
@@ -9,10 +10,12 @@ public class UsersController(IUserService userService, ILogger<UsersController> 
 {
 
     /// <summary>
-    /// Get all users
+    /// Get all users (Admin only)
     /// </summary>
     /// <returns>List of all active users</returns>
     [HttpGet]
+    //[Authorize(Roles = "Admin")]
+    [Authorize]
     public async Task<IActionResult> GetAllUsers()
     {
         try
@@ -28,11 +31,45 @@ public class UsersController(IUserService userService, ILogger<UsersController> 
     }
 
     /// <summary>
-    /// Get user by ID
+    /// Get current user information
+    /// </summary>
+    /// <returns>Current user information</returns>
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<IActionResult> GetCurrentUser()
+    {
+        try
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new { Message = "Invalid token" });
+            }
+
+            var user = await userService.GetUserByIdAsync(userId);
+
+            if (user != null)
+            {
+                return Ok(user);
+            }
+
+            return NotFound(new { Message = "User not found" });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error in GetCurrentUser endpoint");
+            return StatusCode(500, new { Message = "Internal server error" });
+        }
+    }
+
+    /// <summary>
+    /// Get user by ID (Authenticated users can access)
     /// </summary>
     /// <param name="id">User ID</param>
     /// <returns>User information</returns>
     [HttpGet("{id}")]
+    [Authorize]
     public async Task<IActionResult> GetUser(string id)
     {
         try
@@ -54,11 +91,12 @@ public class UsersController(IUserService userService, ILogger<UsersController> 
     }
 
     /// <summary>
-    /// Delete user (soft delete)
+    /// Delete user (Admin only)
     /// </summary>
     /// <param name="id">User ID</param>
     /// <returns>Success message</returns>
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteUser(string id)
     {
         try

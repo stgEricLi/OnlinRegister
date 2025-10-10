@@ -34,7 +34,7 @@ public class UserService(
             // Create user manually since we need to handle salt and password
             var user = new User
             {
-                Username = registerDto.Username,
+                Username = registerDto.Email, // Use email as username
                 Email = registerDto.Email,
                 Role = "User", // Default role
                 Salt = GenerateSalt()
@@ -205,5 +205,43 @@ public class UserService(
 
         var hashedPassword = HashPasswordWithSalt(password, salt);
         return hashedPassword == hash;
+    }
+
+    public async Task<UserResponseDto?> CreateAdminUserAsync(RegisterDto registerDto)
+    {
+        try
+        {
+            // Check if user already exists
+            var existingUser = await context.Users
+                .FirstOrDefaultAsync(u => u.Email == registerDto.Email);
+
+            if (existingUser != null)
+            {
+                logger.LogWarning("Admin user creation failed - email already exists: {Email}", registerDto.Email);
+                return null;
+            }
+
+            var user = new User
+            {
+                Username = registerDto.Email,
+                Email = registerDto.Email,
+                Role = "Admin", // Admin role
+                Salt = GenerateSalt()
+            };
+
+            // Hash password with the generated salt
+            user.Password = HashPasswordWithSalt(registerDto.Password, user.Salt);
+
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+
+            logger.LogInformation("Admin user {Email} created successfully", registerDto.Email);
+            return mapper.Map<UserResponseDto>(user);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error occurred during admin user creation for {Email}", registerDto.Email);
+            return null;
+        }
     }
 }

@@ -11,7 +11,8 @@ public class AuthController(
     IUserService userService,
     IValidator<RegisterDto> registerValidator,
     IValidator<LoginDto> loginValidator,
-    ILogger<AuthController> logger) : ControllerBase
+    ILogger<AuthController> logger,
+    IWebHostEnvironment environment) : ControllerBase
 {
 
     /// <summary>
@@ -82,6 +83,46 @@ public class AuthController(
                 Success = false,
                 Message = "An error occurred during login"
             });
+        }
+    }
+
+    /// <summary>
+    /// Create admin user (Development only - remove in production)
+    /// </summary>
+    /// <param name="registerDto">Admin user registration data</param>
+    /// <returns>Admin user information if creation successful</returns>
+    [HttpPost("create-admin")]
+    public async Task<IActionResult> CreateAdmin([FromBody] RegisterDto registerDto)
+    {
+        try
+        {
+            // Only allow in development environment for security
+            if (!environment.IsDevelopment())
+            {
+                return NotFound();
+            }
+
+            // Validate input
+            var validationResult = await registerValidator.ValidateAsync(registerDto);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
+            }
+
+            var adminUser = await userService.CreateAdminUserAsync(registerDto);
+
+            if (adminUser != null)
+            {
+                logger.LogInformation("Admin user created successfully: {Email}", registerDto.Email);
+                return Ok(new { Message = "Admin user created successfully", User = adminUser });
+            }
+
+            return BadRequest(new { Message = "Admin user creation failed" });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error in CreateAdmin endpoint");
+            return StatusCode(500, new { Message = "Internal server error" });
         }
     }
 }

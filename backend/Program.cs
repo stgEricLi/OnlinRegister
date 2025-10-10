@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -12,8 +11,8 @@ using OnlineRegister.Interfaces;
 using OnlineRegister.Configurations;
 using OnlineRegister.Validators;
 using OnlineRegister.DTOs;
-
 using OnlineRegister.Helpers;
+using OnlineRegister.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -120,7 +119,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 
 // Global Exception Handling
-//app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // Development-specific middleware
 if (app.Environment.IsDevelopment())
@@ -158,27 +157,27 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Health Check Endpoint
-app.MapGet("/health", () => new { Status = "Healthy", Timestamp = DateTime.UtcNow })
-    .WithName("HealthCheck")
-    .WithOpenApi();
+// app.MapGet("/health", () => new { Status = "Healthy", Timestamp = DateTime.UtcNow })
+//     .WithName("HealthCheck")
+//     .WithOpenApi();
 
-// Test Database Connection
-using (var scope = app.Services.CreateScope())
-{
-    try
-    {
-        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+// // Test Database Connection
+// using (var scope = app.Services.CreateScope())
+// {
+//     try
+//     {
+//         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        // Test database connection
-        await context.Database.CanConnectAsync();
-        Log.Information("Database connection successful");
-    }
-    catch (Exception ex)
-    {
-        Log.Error(ex, "Database connection failed");
-        // Don't throw - let the application start but log the error
-    }
-}
+//         // Test database connection
+//         await context.Database.CanConnectAsync();
+//         Log.Information("Database connection successful");
+//     }
+//     catch (Exception ex)
+//     {
+//         Log.Error(ex, "Database connection failed");
+//         // Don't throw - let the application start but log the error
+//     }
+// }
 
 // var summaries = new[]
 // {

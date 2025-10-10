@@ -9,4 +9,5 @@ public interface IUserService
     Task<UserResponseDto?> GetUserByIdAsync(string userId);
     Task<IEnumerable<UserResponseDto>> GetAllUsersAsync();
     Task<bool> DeleteUserAsync(string userId);
+    Task<UserResponseDto?> CreateAdminUserAsync(RegisterDto registerDto);
 }
