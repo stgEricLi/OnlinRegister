@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JWT Authentication Guide - OnlineRegister API</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .step {
+        background: #f8f9fa;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 5px;
+        border-left: 4px solid #007bff;
+      }
+      .code {
+        background: #f1f1f1;
+        padding: 10px;
+        border-radius: 3px;
+        font-family: monospace;
+      }
+      .success {
+        border-left-color: #28a745;
+        background: #f0fff4;
+      }
+      .warning {
+        border-left-color: #ffc107;
+        background: #fffbf0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔐 JWT Authentication Guide</h1>
+    <p>
+      This guide shows you how to use JWT authentication with the OnlineRegister
+      API in Swagger UI.
+    </p>
+
+    <div class="step">
+      <h3>Step 1: Access Swagger UI</h3>
+      <p>Navigate to: <a href="/" target="_blank">http://localhost:5147</a></p>
+      <p>
+        The Swagger UI will open automatically when you press F5 or run the
+        application.
+      </p>
+    </div>
+
+    <div class="step">
+      <h3>Step 2: Login to Get JWT Token</h3>
+      <p>Use the <strong>POST /api/auth/login</strong> endpoint:</p>
+      <div class="code">
+        { "username": "your_username", "password": "your_password" }
+      </div>
+      <p>The response will include your JWT token:</p>
+      <div class="code">
+        { "success": true, "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "user": { ... }, "message": "Login successful" }
+      </div>
+    </div>
+
+    <div class="step success">
+      <h3>Step 3: Automatic Token Handling</h3>
+      <p><strong>🎉 Enhanced Features:</strong></p>
+      <ul>
+        <li>
+          ✅ Token is automatically saved to browser storage after successful
+          login
+        </li>
+        <li>✅ Success notification appears when you login</li>
+        <li>✅ "Authorize" button will pulse to get your attention</li>
+        <li>✅ Token is auto-filled when you click "Authorize"</li>
+        <li>✅ Visual instructions guide you through the process</li>
+      </ul>
+    </div>
+
+    <div class="step">
+      <h3>Step 4: Authorize in Swagger</h3>
+      <ol>
+        <li>
+          Click the <strong>"Authorize"</strong> button (🔒) at the top of
+          Swagger UI
+        </li>
+        <li>
+          The token input will be auto-filled with:
+          <code>Bearer your_token_here</code>
+        </li>
+        <li>Click <strong>"Authorize"</strong> in the modal</li>
+        <li>Click <strong>"Close"</strong></li>
+      </ol>
+    </div>
+
+    <div class="step success">
+      <h3>Step 5: Access Protected Endpoints</h3>
+      <p>Now you can use protected endpoints like:</p>
+      <ul>
+        <li><strong>GET /api/users</strong> (Admin only)</li>
+        <li><strong>GET /api/users/{id}</strong></li>
+        <li>Any other endpoints that require authentication</li>
+      </ul>
+    </div>
+
+    <div class="step warning">
+      <h3>🔧 Manual Token Entry (if needed)</h3>
+      <p>
+        If auto-fill doesn't work, manually enter in the Authorization field:
+      </p>
+      <div class="code">Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
+      <p>
+        <strong>Important:</strong> Include "Bearer " (with space) before your
+        token!
+      </p>
+    </div>
+
+    <div class="step">
+      <h3>🚀 Quick Test</h3>
+      <p>To test the setup:</p>
+      <ol>
+        <li>Create a user with <strong>POST /api/auth/register</strong></li>
+        <li>Login with <strong>POST /api/auth/login</strong></li>
+        <li>Watch for the success notification and pulsing Authorize button</li>
+        <li>Click Authorize and verify the token is auto-filled</li>
+        <li>
+          Try accessing <strong>GET /api/users</strong> (requires admin role)
+        </li>
+      </ol>
+    </div>
+
+    <p>
+      <a
+        href="/"
+        style="
+          background: #007bff;
+          color: white;
+          padding: 10px 20px;
+          text-decoration: none;
+          border-radius: 5px;
+        "
+        >🔙 Back to Swagger UI</a
+      >
+    </p>
+  </body>
+</html>

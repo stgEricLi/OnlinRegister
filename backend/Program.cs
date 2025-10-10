@@ -92,10 +92,12 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "OnlineRegister API", Version = "v1" });
 
-    // Add JWT Authentication to Swagger
+    // Add JWT Authentication to Swagger with proper Bearer token support
     c.AddSecurityDefinition("Bearer", new()
     {
-        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+        Description = @"JWT Authorization header using the Bearer scheme. 
+                      Enter 'Bearer' [space] and then your token in the text input below.
+                      Example: 'Bearer 12345abcdef'",
         Name = "Authorization",
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
         Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
@@ -107,11 +109,22 @@ builder.Services.AddSwaggerGen(c =>
         {
             new()
             {
-                Reference = new() { Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme, Id = "Bearer" }
+                Reference = new() { Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme, Id = "Bearer" },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = Microsoft.OpenApi.Models.ParameterLocation.Header,
             },
-            Array.Empty<string>()
+            new List<string>()
         }
     });
+
+    // Enable XML comments for better documentation
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
 });
 
 var app = builder.Build();
@@ -131,14 +144,26 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = string.Empty; // ← This makes Swagger UI the root page
         c.DocumentTitle = "OnlineRegister API Documentation";
 
-        // Optional: Enhanced UI features
+        // Enhanced UI features for better JWT token handling
         c.DefaultModelsExpandDepth(-1); // Hide models section by default
         c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None); // Collapse all endpoints by default
         c.EnableDeepLinking(); // Enable deep linking for sharing URLs
         c.EnableFilter(); // Enable search/filter box
         c.ShowExtensions(); // Show vendor extensions
+        c.EnableValidator(); // Enable request/response validation
+        c.SupportedSubmitMethods(Swashbuckle.AspNetCore.SwaggerUI.SubmitMethod.Get,
+                                Swashbuckle.AspNetCore.SwaggerUI.SubmitMethod.Post,
+                                Swashbuckle.AspNetCore.SwaggerUI.SubmitMethod.Put,
+                                Swashbuckle.AspNetCore.SwaggerUI.SubmitMethod.Delete);
+
+        // Custom CSS and JS for better token management
+        c.InjectStylesheet("/swagger-ui/custom.css");
+        c.InjectJavascript("/swagger-ui/custom.js");
     });
 }
+
+// Static Files (for custom Swagger UI assets)
+app.UseStaticFiles();
 
 // CORS
 app.UseCors("AllowAll");

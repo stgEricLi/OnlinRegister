@@ -14,8 +14,8 @@ public class UsersController(IUserService userService, ILogger<UsersController> 
     /// </summary>
     /// <returns>List of all active users</returns>
     [HttpGet]
-    //[Authorize(Roles = "Admin")]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
+    //[Authorize]
     public async Task<IActionResult> GetAllUsers()
     {
         try
