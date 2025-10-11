@@ -75,6 +75,12 @@ builder.Services.AddScoped<JwtHelper>();
 // Register custom authorization handlers (\Middleware\RoleAuthorizationHandler.cs)
 builder.Services.AddCustomAuthorizationHandlers();
 
+// Configure Authorization Policies
+builder.Services.AddAuthorization(options =>
+{
+    options.ConfigureCustomPolicies();
+});
+
 // Controllers
 builder.Services.AddControllers();
 

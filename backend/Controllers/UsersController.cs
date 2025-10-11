@@ -11,11 +11,11 @@ public class UsersController(IUserService userService, ILogger<UsersController> 
 
     /// <summary>
     /// Get all users (Admin only)
+    /// Check Policy at AuthorizationHandlerExtensions in the RoleAuthorizationHandler.cs
     /// </summary>
     /// <returns>List of all active users</returns>
     [HttpGet]
-    [Authorize(Roles = "Admin")]
-    //[Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAllUsers()
     {
         try
@@ -64,16 +64,28 @@ public class UsersController(IUserService userService, ILogger<UsersController> 
     }
 
     /// <summary>
-    /// Get user by ID (Authenticated users can access)
+    /// Get user by ID (Users can access their own data, Managers/Admins can access any user data)
     /// </summary>
     /// <param name="id">User ID</param>
     /// <returns>User information</returns>
     [HttpGet("{id}")]
-    [Authorize]
+    [Authorize(Policy = "UserOrHigher")]
     public async Task<IActionResult> GetUser(string id)
     {
         try
         {
+            // Check if user is trying to access their own data or if they have elevated permissions
+            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+
+            // Allow if user is accessing their own data, or if they are Manager/Admin
+            if (currentUserId != id &&
+                !string.Equals(userRole, "Manager", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(userRole, "Admin", StringComparison.OrdinalIgnoreCase))
+            {
+                return Forbid("You can only access your own user data unless you have elevated permissions.");
+            }
+
             var user = await userService.GetUserByIdAsync(id);
 
             if (user != null)
@@ -96,7 +108,7 @@ public class UsersController(IUserService userService, ILogger<UsersController> 
     /// <param name="id">User ID</param>
     /// <returns>Success message</returns>
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> DeleteUser(string id)
     {
         try

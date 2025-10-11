@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using OnlineRegister.Models;
 
+// The system uses multiple authorization handlers that work together:
+// RoleAuthorizationHandler (Primary): Handles basic role hierarchy
+// ManagerScopeAuthorizationHandler (Specialized): Handles manager-specific scope logic
+// ResourceOwnerAuthorizationHandler: Handles resource ownership logic
 namespace OnlineRegister.Middleware
 {
     /// <summary>
@@ -106,6 +110,7 @@ namespace OnlineRegister.Middleware
     /// <summary>
     /// Authorization handler for resource-based access control
     /// Allows users to access their own resources or admins to access any resource
+    /// [Authorize(Policy = "ResourceOwner")] 
     /// </summary>
     public class ResourceOwnerAuthorizationHandler : AuthorizationHandler<ResourceOwnerRequirement>
     {
@@ -184,6 +189,7 @@ namespace OnlineRegister.Middleware
     /// <summary>
     /// Authorization handler for manager-specific operations
     /// Allows managers to access resources within their scope and admins to access everything
+    /// [Authorize(Policy = "ManagerScope")]
     /// </summary>
     public class ManagerScopeAuthorizationHandler : AuthorizationHandler<RoleRequirement>
     {
@@ -220,6 +226,15 @@ namespace OnlineRegister.Middleware
             // Managers have access to their scope
             if (userRole == UserRole.Manager)
             {
+                // Check manager's department/team scope
+                // var managerDepartment = context.User.FindFirst("Department")?.Value;
+                // var targetUserDepartment = GetTargetResourceDepartment(context.Resource);
+
+                // if (managerDepartment == targetUserDepartment)
+                // {
+                //     context.Succeed(requirement);
+                // }
+
                 // For now, managers have access to all user management operations
                 // In a more complex system, this could check specific scope restrictions
                 context.Succeed(requirement);
