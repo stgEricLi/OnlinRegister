@@ -21,7 +21,7 @@ const Home: React.FC = () => {
       <p className="page-subtitle">Welcome to the home page!</p>
 
       <div className={styles.gridCols3}>
-        {/* Using CSS class */}
+        {/* Using CSS class in components.css*/}
         <div className="card">
           <h3 className="card-title">Feature 1</h3>
           <p className="card-text">
@@ -30,7 +30,7 @@ const Home: React.FC = () => {
         </div>
 
         {/* Using TypeScript style object */}
-        <div className={styles.card}>
+        <div className="card">
           <h3 className={styles.cardTitle}>Feature 2</h3>
           <p className={styles.cardText}>
             This card uses TypeScript style objects.

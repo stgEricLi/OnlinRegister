@@ -3,31 +3,31 @@
   .btn-primary {
     @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors;
   }
-  
+
   .btn-secondary {
     @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded transition-colors;
   }
-  
+
   .card {
-    @apply bg-white p-6 rounded-lg shadow-md border;
+    @apply bg-white p-6 rounded-lg shadow-md border border-blue-500;
   }
-  
+
   .card-title {
     @apply text-xl font-semibold text-gray-800 mb-3;
   }
-  
+
   .card-text {
     @apply text-gray-600;
   }
-  
+
   .container {
     @apply max-w-4xl mx-auto px-4;
   }
-  
+
   .page-title {
     @apply text-4xl font-bold text-gray-800 mb-6;
   }
-  
+
   .page-subtitle {
     @apply text-lg text-gray-600 mb-8;
   }
