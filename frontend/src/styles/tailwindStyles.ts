@@ -9,7 +9,7 @@ export const styles = {
     "bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded transition-colors",
 
   // Cards
-  card: "bg-white p-6 rounded-lg shadow-md border",
+  card: "bg-white p-6 rounded-lg shadow-md border-red-500",
   cardTitle: "text-xl font-semibold text-gray-800 mb-3",
   cardText: "text-gray-600",
 
