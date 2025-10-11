@@ -12,7 +12,7 @@ function App() {
     <Router>
       <div className="App">
         <Navigation />
-        <main style={{ padding: "0 1rem" }}>
+        <main className="px-4">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />

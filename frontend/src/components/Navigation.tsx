@@ -3,31 +3,20 @@ import { Link } from "react-router-dom";
 
 const Navigation: React.FC = () => {
   return (
-    <nav
-      style={{
-        padding: "1rem",
-        backgroundColor: "#f0f0f0",
-        marginBottom: "2rem",
-      }}
-    >
-      <ul
-        style={{
-          listStyle: "none",
-          display: "flex",
-          gap: "1rem",
-          margin: 0,
-          padding: 0,
-        }}
-      >
+    <nav className="bg-gray-100 p-4 mb-8 shadow-sm">
+      <ul className="flex gap-6 list-none m-0 p-0">
         <li>
-          <Link to="/" style={{ textDecoration: "none", color: "#007bff" }}>
+          <Link
+            to="/"
+            className="text-blue-600 hover:text-blue-800 no-underline font-medium transition-colors"
+          >
             Home
           </Link>
         </li>
         <li>
           <Link
             to="/about"
-            style={{ textDecoration: "none", color: "#007bff" }}
+            className="text-blue-600 hover:text-blue-800 no-underline font-medium transition-colors"
           >
             About
           </Link>
@@ -35,7 +24,7 @@ const Navigation: React.FC = () => {
         <li>
           <Link
             to="/contact"
-            style={{ textDecoration: "none", color: "#007bff" }}
+            className="text-blue-600 hover:text-blue-800 no-underline font-medium transition-colors"
           >
             Contact
           </Link>
