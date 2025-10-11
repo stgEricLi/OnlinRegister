@@ -72,6 +72,9 @@ builder.Services.AddScoped<IValidator<LoginDto>, LoginDtoValidator>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<JwtHelper>();
 
+// Register custom authorization handlers (\Middleware\RoleAuthorizationHandler.cs)
+builder.Services.AddCustomAuthorizationHandlers();
+
 // Controllers
 builder.Services.AddControllers();
 
