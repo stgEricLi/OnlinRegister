@@ -1,6 +1,7 @@
 import axios, { AxiosError } from "axios";
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import type { ApiError, ErrorResponseData } from "../interfaces/IHttp";
+import type { User, AuthResult } from "../interfaces/IAuth";
 
 class HttpService {
   private axiosInstance: AxiosInstance;
@@ -64,9 +65,12 @@ class HttpService {
           // Clear invalid token
           this.clearStoredToken();
 
-          // Redirect to login or dispatch logout action
-          // This will be handled by the auth context/Redux store
-          //window.dispatchEvent(new CustomEvent("auth:unauthorized"));
+          // This will be handled by the auth context/Redux store (Redirect to login or dispatch logout action)
+          // The custom event acts as a bridge between HTTP service and Redux store for handling authentication errors globally.
+          // When a 401 error occurs, this line should dispatch the custom event.
+          // authSlice.ts lines 26-28: This listens for this custom event.
+          // window.dispatchEvent is part of the DOM Event API that's built into all modern browsers.
+          window.dispatchEvent(new CustomEvent("auth:unauthorized"));
 
           return Promise.reject(this.handleError(err));
         } // End if 401 Unauthorized
@@ -140,21 +144,35 @@ class HttpService {
     }
   }
 
+  public getStoredUser(): User | null {
+    try {
+      const userJson = localStorage.getItem("user");
+      return userJson ? JSON.parse(userJson) : null;
+    } catch (error) {
+      console.error("Error retrieving user from storage:", error);
+      return null;
+    }
+  }
+
   private clearStoredToken(): void {
     try {
       console.log(
         "httpService: clearStoredToken: remove token from localStorage."
       );
       localStorage.removeItem("authToken");
+      localStorage.removeItem("user");
     } catch (error) {
       console.error("Error clearing token from storage:", error);
     }
   }
 
-  public setAuthToken(token: string): void {
+  public setAuthToken(authResult: AuthResult): void {
     try {
       console.log("httpService: setAuthToken: write token to localStorage.");
-      localStorage.setItem("authToken", token);
+      localStorage.setItem("authToken", authResult.token);
+      if (authResult.user) {
+        localStorage.setItem("user", JSON.stringify(authResult.user));
+      }
     } catch (error) {
       console.error("Error storing token:", error);
     }
