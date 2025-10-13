@@ -29,6 +29,14 @@ const Navigation: React.FC = () => {
             Contact
           </Link>
         </li>
+        <li>
+          <Link
+            to="/login"
+            className="text-blue-600 hover:text-blue-800 no-underline font-medium transition-colors"
+          >
+            Login
+          </Link>
+        </li>
       </ul>
     </nav>
   );

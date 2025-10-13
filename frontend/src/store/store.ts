@@ -1,10 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./slices/authSlice";
 
-// from export default userSlice.reducer; at In userSlice.ts
-// Importing the default export and giving it the name userReducer. This is just an alias - you could name it anything you want.
-//import userReducer from "./slices/userSlice";
-
 // Create the Redux store with Redux Toolkit
 export const store = configureStore({
   reducer: {

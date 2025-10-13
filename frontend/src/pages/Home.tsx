@@ -4,6 +4,7 @@ import { useButtonStyles, useCardStyles } from "../hooks/useStyles";
 
 const Home: React.FC = () => {
   // Using custom hooks for dynamic styles
+
   const primaryButtonStyles = useButtonStyles({
     variant: "primary",
     size: "md",

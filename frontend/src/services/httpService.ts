@@ -9,7 +9,7 @@ class HttpService {
 
   constructor() {
     this.baseURL =
-      import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+      import.meta.env.VITE_API_BASE_URL || "http://localhost:5147/api/";
 
     // Create axios instance with base configuration
     this.axiosInstance = axios.create({
@@ -19,7 +19,7 @@ class HttpService {
         "Content-Type": "application/json",
       },
     });
-
+    console.log(this.baseURL);
     this.setupInterceptors();
   }
 
@@ -85,6 +85,7 @@ class HttpService {
       status: err.response?.status,
       data: err.response?.data,
     };
+    console.error("httpService - handleError: err: %O", err);
 
     if (err.response) {
       // Server responded with error status
@@ -116,6 +117,7 @@ class HttpService {
       }
     } else if (err.request) {
       // Network error
+
       apiErr.message = "Network error - please check your connection";
     } else {
       // Request setup error

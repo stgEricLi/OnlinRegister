@@ -57,6 +57,7 @@ public class AuthController(
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
     {
+        // admin@stg.com, Stg123&%
         try
         {
             // Validate input

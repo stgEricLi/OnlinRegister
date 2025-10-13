@@ -81,6 +81,10 @@ const authSlice = createSlice({
         state.token = null;
         state.isAuthenticated = false;
         state.error = action.payload || "Login failed";
+        console.error(
+          "authSlice: Login Failed- action.payload : %O",
+          action.payload
+        );
       });
   },
 });
@@ -96,7 +100,7 @@ export const loginUser = createAsyncThunk<
   AuthResult, // Return type on success (This becomes action.payload when successful)
   LoginRequest, // Input parameter type
   { rejectValue: string } // Rejected value type
->("auth/login", async (credentials, { rejectWithValue }) => {
+>("Auth/login", async (credentials, { rejectWithValue }) => {
   // "auth/login", - This is the action type string for Redux.
   // The first parameter contains the login data
   // The second parameter is destructured from Redux Toolkit's thunk API, giving you access to rejectWithValue function
