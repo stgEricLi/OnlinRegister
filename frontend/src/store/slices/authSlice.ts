@@ -29,6 +29,63 @@ if (typeof window !== "undefined") {
   });
 }
 
+//#region ---- Auth slice ----
+//
+const authSlice = createSlice({
+  name: "auth", // slice name
+  initialState, // AuthState Object
+  // Define all reduce functions:
+  reducers: {
+    clearError: (state) => {
+      // Update error property in state
+      state.error = null;
+    },
+    setCredentials: (
+      state,
+      action: PayloadAction<{ user: User; token: string }>
+    ) => {
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.isAuthenticated = true;
+      state.error = null;
+    },
+    handleUnauthorized: (state) => {
+      state.user = null;
+      state.token = null;
+      state.isAuthenticated = false;
+      state.error = "Session expired. Please log in again.";
+      state.isLoading = false;
+    },
+  },
+  extraReducers: (builder) => {
+    // Login cases
+    // Handle the 3 automatic action types that loginUser Thunk creates
+    builder
+      .addCase(loginUser.pending, (state) => {
+        // Handles when loginUser is dispatched but not resolved yet
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(loginUser.fulfilled, (state, action) => {
+        // Handles when loginUser resolves successfully
+        state.isLoading = false;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.isAuthenticated = true;
+        state.error = null;
+      })
+      .addCase(loginUser.rejected, (state, action) => {
+        // Handles when loginUser throws an error or rejects
+        state.isLoading = false;
+        state.user = null;
+        state.token = null;
+        state.isAuthenticated = false;
+        state.error = action.payload || "Login failed";
+      });
+  },
+});
+//#endregion
+
 //#region ---- Login THUNK ----
 // When you create an async thunk, Redux Toolkit automatically generates 3 action types:
 // loginUser.pending - Dispatched when the async function starts
@@ -62,4 +119,23 @@ export const loginUser = createAsyncThunk<
     return rejectWithValue(apiError.message || "Network error occurred");
   }
 });
+//#endregion
+
+//#region ---- Export Functions and State ----
+// Export actions (reducer functions)
+// These actions are used in components to dispatch state changes (dispatch(clearError()))
+// Functions you call to trigger state changes
+export const { clearError, setCredentials, handleUnauthorized } =
+  authSlice.actions;
+
+// Export the auth slice from the root Redux state.
+// state.auth corresponds to the name: "auth" property defined in the createSlice function
+// { auth: AuthState } - This is the TypeScript type definition
+// selectAuth actually is the AuthState type
+export const currAuthState = (state: { auth: AuthState }) => state.auth;
+
+// Export reducer
+// The reducer is used when configuring the Redux store to handle state updates
+// The function Redux calls internally to actually update the state
+export default authSlice.reducer;
 //#endregion
