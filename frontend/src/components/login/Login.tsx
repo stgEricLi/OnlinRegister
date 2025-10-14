@@ -15,6 +15,7 @@ const Login: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   // Only need these tree properties from Auth state
+  // AuthState = { user, token, isAuthenticated, isLoading, error}
   const { isLoading, error, isAuthenticated } = useAppSelector(currAuthState);
 
   // Manage current login form inputs state

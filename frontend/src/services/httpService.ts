@@ -123,9 +123,20 @@ class HttpService {
           apiErr.message = errorData?.message || `HTTP Error ${status}`;
       }
     } else if (err.request) {
-      // Network error
-
-      apiErr.message = "Network error - please check your connection";
+      // Network error - request was made but no response received
+      // This could be due to network connectivity issues, server being down, CORS issues, etc.
+      if (err.code === "ECONNABORTED") {
+        apiErr.message = "Request timeout - please try again";
+      } else if (err.code === "ERR_NETWORK") {
+        apiErr.message =
+          "Network error - please check your internet connection";
+      } else if (err.code === "ERR_CONNECTION_REFUSED") {
+        apiErr.message = "Connection refused - server may be unavailable";
+      } else {
+        apiErr.message =
+          "Network error - please check your connection and try again";
+      }
+      apiErr.status = 0; // No HTTP status for network errors
     } else {
       // Request setup error
       apiErr.message = err.message || "Request configuration error";
