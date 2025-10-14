@@ -2,6 +2,8 @@ import axios, { AxiosError } from "axios";
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import type { ApiError, ErrorResponseData } from "../interfaces/IHttp";
 import type { User, AuthResult } from "../interfaces/IAuth";
+// Import ErrorHandlingService for global error handling
+import errorHandlingService from "./ErrorHandlingService";
 
 class HttpService {
   private axiosInstance: AxiosInstance;
@@ -72,9 +74,13 @@ class HttpService {
           // window.dispatchEvent is part of the DOM Event API that's built into all modern browsers.
           window.dispatchEvent(new CustomEvent("auth:unauthorized"));
 
-          return Promise.reject(this.handleError(err));
+          const apiError = this.handleError(err);
+          errorHandlingService.handleError(apiError);
+          return Promise.reject(apiError);
         } // End if 401 Unauthorized
-        return Promise.reject(this.handleError(err));
+        const apiError = this.handleError(err);
+        errorHandlingService.handleError(apiError);
+        return Promise.reject(apiError);
       }
     ); // End Response
   }
@@ -85,6 +91,7 @@ class HttpService {
       status: err.response?.status,
       data: err.response?.data,
     };
+
     console.error("httpService - handleError: err: %O", err);
 
     if (err.response) {
