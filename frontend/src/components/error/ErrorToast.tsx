@@ -15,6 +15,8 @@ interface ErrorToastProps {
     | "bottom-center";
 }
 
+// The errorHandlingService.handleError can automatically trigger ErrorToast
+// through an event listener pattern.
 export const ErrorToastContainer: React.FC<ErrorToastProps> = ({
   autoHideDuration = 5000,
   maxToasts = 3,
@@ -23,8 +25,12 @@ export const ErrorToastContainer: React.FC<ErrorToastProps> = ({
   const [toasts, setToasts] = useState<ToastError[]>([]);
 
   useEffect(() => {
+    // errorHandlingService is a single instance shared across the app
+    // this handleError is a function that is going to be registered as a listener (at line 66 in this useEffect)
+    // the function signature: ((error: AppError) => void)[] = [];
     const handleError = (error: AppError) => {
       // Only show certain types of errors as toasts
+      // This function gets called when errors occur
       const severity = errorHandlingService.getErrorSeverity(error);
 
       // Skip low severity errors or validation errors (they're usually handled by forms)
@@ -33,6 +39,8 @@ export const ErrorToastContainer: React.FC<ErrorToastProps> = ({
       }
 
       const id = `toast-${Date.now()}-${Math.random()}`;
+
+      // 🍞 Create and show toast
       const newToast: ToastError = {
         id,
         error,
@@ -54,9 +62,12 @@ export const ErrorToastContainer: React.FC<ErrorToastProps> = ({
       }
     };
 
+    // Register this handleError function to an Array in errorHandlingService
+    // errorHandlingService.handleError() will trigger notifyErrorListeners() function
     errorHandlingService.addErrorListener(handleError);
 
     return () => {
+      // 🧹 Cleanup subscription
       errorHandlingService.removeErrorListener(handleError);
     };
   }, [autoHideDuration, maxToasts]);

@@ -16,6 +16,9 @@ class ErrorHandlingService {
   private errorQueue: AppError[] = [];
   private maxRetries = 3;
   private retryDelay = 1000; // 1 second
+
+  // store a list of functions that want to be notified when errors occur
+  // an array of functions
   private errorListeners: ((error: AppError) => void)[] = [];
 
   constructor() {
@@ -97,6 +100,8 @@ class ErrorHandlingService {
     this.addToErrorQueue(normalizedError);
 
     // Notify error listeners (like ErrorToast)
+    // This works through a Publisher-Subscriber (Observer) Pattern:
+    // 🔥 This line triggers all subscribers
     this.notifyErrorListeners(normalizedError);
   }
 
@@ -296,7 +301,9 @@ class ErrorHandlingService {
   ): void {
     // This could integrate with a toast notification system
     // For now, we'll use console and could dispatch to a notification slice
-    console.log(`[${type.toUpperCase()}] ${message}`);
+    console.log(
+      `ErrorHandlingService.showNotification(): [${type.toUpperCase()}] ${message}`
+    );
 
     // You could dispatch to a notification slice here
     // store.dispatch(showNotification({ message, type }));
@@ -399,7 +406,7 @@ class ErrorHandlingService {
       timestamp: context.timestamp,
     };
 
-    console.error("ErrorHandlingService:", logData);
+    console.error("ErrorHandlingService.logError():", logData);
 
     // In production, you might want to send this to a logging service
     if (import.meta.env.PROD) {
@@ -407,9 +414,13 @@ class ErrorHandlingService {
       // this.sendToLoggingService(logData);
     }
   }
+  //#endregion
 
   //#region ---- Event Listener Methods ----
   // Add error listener for components like ErrorToast
+  // a list of functions that want to be notified when errors occur
+  // Each function in the array must match the signature (error: AppError) => void
+  //
   public addErrorListener(listener: (error: AppError) => void): void {
     this.errorListeners.push(listener);
   }
@@ -424,18 +435,19 @@ class ErrorHandlingService {
 
   // Notify all listeners about an error
   private notifyErrorListeners(error: AppError): void {
+    // run handleError function at useEffect() hook in the ErrorToastContainer component
     this.errorListeners.forEach((listener) => {
       try {
-        listener(error);
+        listener(error); // <-- Call each subscriber
       } catch (err) {
         console.error("Error in error listener:", err);
       }
     });
   }
   //#endregion
-  //#endregion
 }
 
 // Create and export singleton instance
+// errorHandlingService is a single instance shared across the app
 const errorHandlingService = new ErrorHandlingService();
 export default errorHandlingService;

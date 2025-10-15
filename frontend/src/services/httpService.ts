@@ -75,6 +75,7 @@ class HttpService {
           window.dispatchEvent(new CustomEvent("auth:unauthorized"));
 
           const apiError = this.handleError(err);
+          // When handleError() is called, it automatically notifies all registered listeners
           errorHandlingService.handleError(apiError);
           return Promise.reject(apiError);
         } // End if 401 Unauthorized
@@ -85,18 +86,18 @@ class HttpService {
     ); // End Response
   }
 
-  private handleError(err: AxiosError): ApiError {
+  private handleError(axiosErr: AxiosError): ApiError {
     const apiErr: ApiError = {
       message: "An unexpected api call error occurred",
-      status: err.response?.status,
-      data: err.response?.data,
+      status: axiosErr.response?.status,
+      data: axiosErr.response?.data,
     };
 
-    console.error("httpService - handleError: err: %O", err);
+    console.error("httpService - handleError: axiosErr: %O", axiosErr);
 
-    if (err.response) {
+    if (axiosErr.response) {
       // Server responded with error status
-      const { status, data } = err.response;
+      const { status, data } = axiosErr.response;
 
       const errorData = data as ErrorResponseData;
 
@@ -122,32 +123,68 @@ class HttpService {
         default:
           apiErr.message = errorData?.message || `HTTP Error ${status}`;
       }
-    } else if (err.request) {
+    } else if (axiosErr.request) {
       // Network error - request was made but no response received
       // This could be due to network connectivity issues, server being down, CORS issues, etc.
-      if (err.code === "ECONNABORTED") {
+      // Check if user is offline (navigator is a global browser API)
+      const isOffline =
+        typeof navigator !== "undefined" ? !navigator.onLine : false;
+
+      let networkError;
+      if (axiosErr.code === "ECONNABORTED") {
+        // Timeout error
+        networkError = errorHandlingService.createTimeoutError(
+          "Request timeout - please try again",
+          true
+        );
         apiErr.message = "Request timeout - please try again";
-      } else if (err.code === "ERR_NETWORK") {
-        apiErr.message =
-          "Network error - please check your internet connection";
-      } else if (err.code === "ERR_CONNECTION_REFUSED") {
+      } else if (axiosErr.code === "ERR_NETWORK" || isOffline) {
+        // Network connectivity error
+        networkError = errorHandlingService.createNetworkError(
+          "Network error - please check your internet connection",
+          isOffline
+        );
+        apiErr.message = isOffline
+          ? "You appear to be offline. Please check your internet connection."
+          : "Network error - please check your internet connection";
+      } else if (axiosErr.code === "ERR_CONNECTION_REFUSED") {
+        // Server unavailable
+        networkError = errorHandlingService.createNetworkError(
+          "Connection refused - server may be unavailable",
+          false
+        );
         apiErr.message = "Connection refused - server may be unavailable";
       } else {
+        // Generic network error
+        networkError = errorHandlingService.createNetworkError(
+          "Network error - please check your connection and try again",
+          isOffline
+        );
         apiErr.message =
           "Network error - please check your connection and try again";
       }
+
       apiErr.status = 0; // No HTTP status for network errors
+
+      // Handle the network error through ErrorHandlingService
+      // This will trigger ErrorToast notifications and proper error handling
+      errorHandlingService.handleError(networkError, {
+        component: "HttpService",
+        action: `${axiosErr.config?.method?.toUpperCase()} ${
+          axiosErr.config?.url
+        }`,
+      });
     } else {
       // Request setup error
-      apiErr.message = err.message || "Request configuration error";
+      apiErr.message = axiosErr.message || "Request configuration error";
     }
 
     // Log error for debugging
     console.error("HTTP Service Error:", {
       message: apiErr.message,
       status: apiErr.status,
-      url: err.config?.url,
-      method: err.config?.method,
+      url: axiosErr.config?.url,
+      method: axiosErr.config?.method,
       data: apiErr.data,
     });
 
@@ -222,8 +259,9 @@ class HttpService {
     data?: any,
     config?: AxiosRequestConfig
   ): Promise<T> {
+    console.log("🚀 POST Request:", { url, data, config });
     const resp = await this.axiosInstance.post<T>(url, data, config);
-    console.log("httpService - POST Response: %O", resp.data);
+    console.log("✅ POST Response:", resp.data);
     return resp.data;
   }
 
