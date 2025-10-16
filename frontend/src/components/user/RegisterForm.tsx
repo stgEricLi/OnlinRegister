@@ -3,6 +3,7 @@ import type { RegisterRequest } from "../../interfaces/IAuth";
 
 import Input from "../ui/Input";
 import Button from "../ui/Button";
+
 interface RegisterFormProp {
   onSubmit: (data: RegisterRequest) => Promise<void>;
   error?: string;
@@ -112,7 +113,7 @@ const RegisterForm: React.FC<RegisterFormProp> = ({
   };
 
   return (
-    <div className="border rounded border-neutral-500 px-12 py-12">
+    <div className="min-w-[550px] border rounded border-neutral-500 px-12 py-12">
       <h1 className="text-blue-500 text-lg font-bold mb-6">Sign Up Form</h1>
       <form onSubmit={handleSubmit}>
         <Input
