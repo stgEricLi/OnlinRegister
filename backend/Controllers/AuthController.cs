@@ -37,10 +37,11 @@ public class AuthController(
             if (user != null)
             {
                 logger.LogInformation("User registered successfully: {Email}", registerDto.Email);
-                return Ok(new { Message = "User registered successfully", User = user });
+                // UserResponseDto: {Id, Username, Email, Role}
+                return Ok(new { success = true, Message = "User registered successfully", User = user });
             }
 
-            return BadRequest(new { Message = "Registration failed" });
+            return BadRequest(new { success = false, Message = "Registration failed" });
         }
         catch (Exception ex)
         {

@@ -1,5 +1,5 @@
 import React from "react";
-import { cn } from "../styles/tailwindStyles";
+import { cn } from "../../styles/tailwindStyles";
 
 interface CardProps {
   children: React.ReactNode;

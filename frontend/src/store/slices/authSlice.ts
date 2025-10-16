@@ -58,9 +58,9 @@ const authSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Login cases
     // Handle the 3 automatic action types that loginUser Thunk creates
     builder
+      //#region Login cases
       .addCase(loginUser.pending, (state) => {
         // Handles when loginUser is dispatched but not resolved yet
         state.isLoading = true;
@@ -85,6 +85,32 @@ const authSlice = createSlice({
           "authSlice: Login Failed- action.payload : %O",
           action.payload
         );
+      })
+      //#endregion
+
+      //#region Register cases
+      .addCase(registerUser.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.isAuthenticated = true;
+        state.error = null;
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.user = null;
+        state.token = null;
+        state.isAuthenticated = false;
+        state.error = action.payload || "Registration failed";
+        console.error(
+          "authSlice: Registration Failed- action.payload : %O",
+          action.payload
+        );
+        //#endregion
       });
   },
 });
@@ -117,6 +143,34 @@ export const loginUser = createAsyncThunk<
     if (data.token) {
       httpService.setAuthToken(data);
     }
+    return data;
+  } catch (error) {
+    const apiError = error as ApiError;
+    return rejectWithValue(apiError.message || "Network error occurred");
+  }
+});
+//#endregion
+
+//#region ---- Signup THUNK ----
+export const registerUser = createAsyncThunk<
+  AuthResult, // Return type on success
+  RegisterRequest, // Input parameter type
+  { rejectValue: string } // Rejected value type
+>("Auth/register", async (userData, { rejectWithValue }) => {
+  try {
+    console.log("authSlice: Calling httpService POST for registration");
+    // return UserResponseDto: {Id, Username, Email, Role}
+    const data: AuthResult = await httpService.post("/auth/register", userData);
+    console.log("authSlice: registerUser() response: %O", data);
+
+    if (!data.success) {
+      return rejectWithValue(data.message || "Registration failed");
+    }
+
+    // Store token using httpService if registration includes auto-login
+    // if (data.token) {
+    //   httpService.setAuthToken(data);
+    // }
     return data;
   } catch (error) {
     const apiError = error as ApiError;

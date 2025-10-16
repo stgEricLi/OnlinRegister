@@ -1,5 +1,5 @@
 import React from "react";
-import { cn } from "../styles/tailwindStyles";
+import { cn } from "../../styles/tailwindStyles";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "danger";

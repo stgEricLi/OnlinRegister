@@ -47,6 +47,8 @@ export interface LoginRequest {
 export interface RegisterRequest {
   email: string;
   password: string;
+  userName: string;
+  role: string;
 }
 
 export interface AuthError {

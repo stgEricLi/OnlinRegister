@@ -100,10 +100,18 @@ class HttpService {
       const { status, data } = axiosErr.response;
 
       const errorData = data as ErrorResponseData;
-
+      //debugger;
       switch (status) {
         case 400:
-          apiErr.message = errorData?.message || "Bad request";
+          // Handle validation errors - backend returns string array for 400 status
+          if (Array.isArray(data)) {
+            // Join validation error messages with line breaks
+            apiErr.message = data.join(". ");
+          } else if (errorData?.message) {
+            apiErr.message = errorData.message;
+          } else {
+            apiErr.message = "Bad request";
+          }
           break;
         case 401:
           apiErr.message = errorData?.message || "Unauthorized access";
@@ -129,7 +137,6 @@ class HttpService {
       // Check if user is offline (navigator is a global browser API)
       const isOffline =
         typeof navigator !== "undefined" ? !navigator.onLine : false;
-
       let networkError;
       if (axiosErr.code === "ECONNABORTED") {
         // Timeout error
