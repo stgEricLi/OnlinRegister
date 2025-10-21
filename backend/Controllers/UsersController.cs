@@ -128,4 +128,76 @@ public class UsersController(IUserService userService, ILogger<UsersController> 
             return StatusCode(500, new { Message = "Internal server error" });
         }
     }
+
+    /// <summary>
+    /// Debug endpoint to test auth token and extract all claims
+    /// </summary>
+    /// <returns>All claims from the JWT token and auth info</returns>
+    [HttpGet("debug/auth")]
+    [Authorize]
+    public IActionResult DebugAuth()
+    {
+        try
+        {
+            // Get the Authorization header
+            var authHeader = Request.Headers.Authorization.FirstOrDefault();
+
+            // Extract all claims from the current user
+            var claims = User.Claims.Select(c => new
+            {
+                Type = c.Type,
+                Value = c.Value,
+                ValueType = c.ValueType,
+                Issuer = c.Issuer
+            }).ToList();
+
+            // Get specific common claims
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+            var userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            var jti = User.FindFirst("jti")?.Value; // JWT ID
+            var exp = User.FindFirst("exp")?.Value; // Expiration
+            var iat = User.FindFirst("iat")?.Value; // Issued at
+
+            var debugInfo = new
+            {
+                Message = "Auth token received successfully",
+                AuthHeader = authHeader?.StartsWith("Bearer ") == true ?
+                    $"Bearer {authHeader[7..10]}..." : authHeader, // Show only first 3 chars of token for security
+                IsAuthenticated = User.Identity?.IsAuthenticated ?? false,
+                AuthenticationType = User.Identity?.AuthenticationType,
+                TotalClaims = claims.Count,
+                CommonClaims = new
+                {
+                    UserId = userId,
+                    UserName = userName,
+                    Email = userEmail,
+                    Role = userRole,
+                    JwtId = jti,
+                    ExpiresAt = exp,
+                    IssuedAt = iat
+                },
+                AllClaims = claims,
+                RequestInfo = new
+                {
+                    Method = Request.Method,
+                    Path = Request.Path,
+                    QueryString = Request.QueryString.ToString(),
+                    UserAgent = Request.Headers.UserAgent.FirstOrDefault(),
+                    RemoteIpAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
+                }
+            };
+
+            logger.LogInformation("Debug auth endpoint called by user {UserId} with {ClaimCount} claims",
+                userId, claims.Count);
+
+            return Ok(debugInfo);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error in DebugAuth endpoint");
+            return StatusCode(500, new { Message = "Internal server error", Error = ex.Message });
+        }
+    }
 }

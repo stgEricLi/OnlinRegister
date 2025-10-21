@@ -40,6 +40,13 @@ const authSlice = createSlice({
       // Update error property in state
       state.error = null;
     },
+    clearAuthState: (state) => {
+      state.user = null;
+      state.token = null;
+      state.isAuthenticated = false;
+      state.isLoading = false;
+      state.error = null;
+    },
     setCredentials: (
       state,
       action: PayloadAction<{ user: User; token: string }>
@@ -183,8 +190,12 @@ export const registerUser = createAsyncThunk<
 // Export actions (reducer functions)
 // These actions are used in components to dispatch state changes (dispatch(clearError()))
 // Functions you call to trigger state changes
-export const { clearError, setCredentials, handleUnauthorized } =
-  authSlice.actions;
+export const {
+  clearError,
+  setCredentials,
+  handleUnauthorized,
+  clearAuthState,
+} = authSlice.actions;
 
 // Export the auth slice from the root Redux state.
 // state.auth corresponds to the name: "auth" property defined in the createSlice function

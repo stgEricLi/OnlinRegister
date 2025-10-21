@@ -17,7 +17,9 @@ const Home: React.FC = () => {
   return (
     <div className="shadow-[0_2px_8px_rgba(0,0,0,0.1)] overflow-hidden rounded-lg bg-white">
       <div className="flex justify-between items-center bg-[#f8f9fa] px-8 py-6 border-b-[#dee2e6] border-b border-solid">
-        <h3 className="text-[#343a40] text-xl m-0">Edit Registration 12345</h3>
+        <h3 className="text-[#343a40] text-xl m-0">
+          Home (Backend running at http:5147)
+        </h3>
         <div className="flex gap-3">
           <button className="rounded text-sm cursor-pointer transition-all duration-[0.2s] font-medium px-4 py-2 border-[none]">
             Cancel

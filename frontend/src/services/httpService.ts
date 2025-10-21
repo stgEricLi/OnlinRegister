@@ -266,10 +266,29 @@ class HttpService {
     data?: any,
     config?: AxiosRequestConfig
   ): Promise<T> {
-    console.log("🚀 POST Request:", { url, data, config });
-    const resp = await this.axiosInstance.post<T>(url, data, config);
-    console.log("✅ POST Response:", resp.data);
-    return resp.data;
+    console.log("🚀 POST Request:", {
+      url,
+      fullUrl: this.baseURL + url,
+      data,
+      config,
+      baseURL: this.baseURL,
+    });
+
+    try {
+      const resp = await this.axiosInstance.post<T>(url, data, config);
+      console.log("✅ POST Response:", resp.data);
+      return resp.data;
+    } catch (error) {
+      console.error("❌ POST Request Failed:", {
+        url,
+        fullUrl: this.baseURL + url,
+        error: error,
+        errorCode: (error as AxiosError).code,
+        errorMessage: (error as AxiosError).message,
+        response: (error as AxiosError).response?.data,
+      });
+      throw error; // Re-throw to let the interceptor handle it
+    }
   }
 
   // PUT METHOD
