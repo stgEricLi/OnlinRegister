@@ -10,9 +10,9 @@ class HttpService {
   private baseURL: string;
 
   constructor() {
-    this.baseURL =
-      import.meta.env.VITE_API_BASE_URL || "http://localhost:5147/api/";
-
+    // this.baseURL =
+    //   import.meta.env.VITE_API_BASE_URL || "http://localhost:5147/api/";
+    this.baseURL = "https://localhost:7024/api/";
     // Create axios instance with base configuration
     this.axiosInstance = axios.create({
       baseURL: this.baseURL,
@@ -67,13 +67,13 @@ class HttpService {
           // Clear invalid token
           this.clearStoredToken();
 
+          debugger;
           // This will be handled by the auth context/Redux store (Redirect to login or dispatch logout action)
           // The custom event acts as a bridge between HTTP service and Redux store for handling authentication errors globally.
           // When a 401 error occurs, this line should dispatch the custom event.
           // authSlice.ts lines 26-28: This listens for this custom event.
           // window.dispatchEvent is part of the DOM Event API that's built into all modern browsers.
           window.dispatchEvent(new CustomEvent("auth:unauthorized"));
-
           const apiError = this.handleError(err);
           // When handleError() is called, it automatically notifies all registered listeners
           errorHandlingService.handleError(apiError);
