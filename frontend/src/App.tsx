@@ -30,6 +30,8 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+            {/* <Route path="/userlist" element={<UserList />} />
+            <Route path="/useredit/:userId" element={<UserEdit />} /> */}
             {/* Protected admin routes */}
             <Route
               path="/order"

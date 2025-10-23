@@ -45,6 +45,14 @@ const Navigation: React.FC = () => {
             Sign Up
           </Link>
         </li>
+        <li>
+          <Link
+            to="/userlist"
+            className="text-blue-600 hover:text-blue-800 no-underline font-medium transition-colors"
+          >
+            Users
+          </Link>
+        </li>
       </ul>
     </nav>
   );
