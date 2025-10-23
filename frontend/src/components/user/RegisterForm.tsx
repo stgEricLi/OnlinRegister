@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import type { RegisterRequest } from "../../interfaces/IAuth";
+import type { RegisteredUser } from "../../interfaces/IUser";
 
 import Input from "../ui/Input";
 import Button from "../ui/Button";
+import DropMenu from "../ui/DropMenu";
 
 interface RegisterFormProp {
-  onSubmit: (data: RegisterRequest) => Promise<void>;
+  user?: RegisteredUser;
+  onSubmit: (data: RegisterRequest | RegisteredUser) => Promise<void>;
   error?: string;
   showRole?: boolean;
 }
@@ -17,12 +20,21 @@ interface FormErrors {
 }
 
 const RegisterForm: React.FC<RegisterFormProp> = ({
+  user,
   onSubmit,
   error,
   showRole,
 }) => {
+  // Define role options
+  const roleOptions = [
+    { id: 1, key: "User", value: "User" },
+    { id: 2, key: "Manager", value: "Manager" },
+    { id: 3, key: "Admin", value: "Admin" },
+  ];
+
   // Form Data state
   const [formData, setFormData] = useState({
+    id: 0,
     userName: "",
     email: "",
     password: "",
@@ -36,18 +48,30 @@ const RegisterForm: React.FC<RegisterFormProp> = ({
   // Manage loading state internally
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  // Populate form data with existing user information
+  useEffect(() => {
+    if (user) {
+      console.log("pass in user: %O", user);
+      setFormData({
+        id: user.id || 0,
+        userName: user.userName || "",
+        email: user.email || "",
+        password: "", // Don't populate password for security
+        confirmPassword: "", // Don't populate confirm password
+        role: user.role || "User",
+      });
+    }
+  }, [user]);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
 
     // Handle role field conversion to number
-    const fieldValue = name === "role" ? Number(value) : value;
+    //const fieldValue = name === "role" ? Number(value) : value;
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: fieldValue,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
     // Clear field-specific error when user starts typing
     if (formErrors[name as keyof FormErrors]) {
@@ -74,7 +98,7 @@ const RegisterForm: React.FC<RegisterFormProp> = ({
     }
 
     // validate password
-    if (formData.password.trim().length === 0) {
+    if (!showRole && formData.password.trim().length === 0) {
       err.password = "Password is required";
     } else if (formData.password.length < 6) {
       err.password = "Password must be at least 6 characters long";
@@ -101,12 +125,13 @@ const RegisterForm: React.FC<RegisterFormProp> = ({
     }
 
     setIsLoading(true);
+
     try {
       console.log("Form submitted:", formData);
       await onSubmit(formData);
     } catch {
       // Error handling is managed by parent component
-      console.error("Registration submission error:", error);
+      console.error("Submission error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -139,17 +164,20 @@ const RegisterForm: React.FC<RegisterFormProp> = ({
           autoComplete="email"
           placeholder="Enter your email address"
         />
-        <Input
-          label="Password"
-          name="password"
-          type="password"
-          value={formData.password}
-          onChange={handleChange}
-          error={formErrors.password}
-          disabled={isLoading}
-          required
-          placeholder="Enter your passwrod"
-        />
+
+        {!showRole && (
+          <Input
+            label="Password"
+            name="password"
+            type="password"
+            value={formData.password}
+            onChange={handleChange}
+            error={formErrors.password}
+            disabled={isLoading}
+            required
+            placeholder="Enter your passwrod"
+          />
+        )}
 
         {!showRole && (
           <Input
@@ -164,23 +192,19 @@ const RegisterForm: React.FC<RegisterFormProp> = ({
           />
         )}
 
+        {/* Role Drop Down */}
         {showRole && (
-          <div>
-            <label htmlFor="role">Role</label>
-            <select
-              id="role"
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              disabled={isLoading}
-              required
-            >
-              <option value="User">User</option>
-              <option value="Manager">Manager</option>
-              <option value="Admin">Admin</option>
-            </select>
-          </div>
+          <DropMenu
+            label="Role"
+            name="role"
+            data={roleOptions}
+            value={formData.role}
+            onChange={handleChange}
+            disabled={isLoading}
+            required
+          />
         )}
+
         <Button
           variant="primary"
           type="submit"
