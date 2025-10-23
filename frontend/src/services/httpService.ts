@@ -10,9 +10,9 @@ class HttpService {
   private baseURL: string;
 
   constructor() {
-    // this.baseURL =
-    //   import.meta.env.VITE_API_BASE_URL || "http://localhost:5147/api/";
-    this.baseURL = "https://localhost:7024/api/";
+    //this.baseURL = "https://localhost:7024/api/";
+    this.baseURL =
+      import.meta.env.VITE_API_BASE_URL || "https://localhost:7024/api/";
     // Create axios instance with base configuration
     this.axiosInstance = axios.create({
       baseURL: this.baseURL,
@@ -255,6 +255,10 @@ class HttpService {
     url: string,
     config?: AxiosRequestConfig
   ): Promise<T> {
+    console.log("🚀 GET Request:", {
+      fullUrl: this.baseURL + url,
+      config,
+    });
     const resp = await this.axiosInstance.get<T>(url, config);
     console.log("httpService - GET Response: %O", resp.data);
     return resp.data;
