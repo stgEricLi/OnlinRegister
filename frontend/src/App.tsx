@@ -12,6 +12,8 @@ import Order from "./pages/Order";
 import Signup from "./pages/Signup";
 //import NotFound from "./pages/NotFound";
 import Login from "./components/login/Login";
+import UserList from "./pages/User/UserList";
+
 import { ProtectedRoute } from "./components/nav/ProtectedRoute";
 import { UserRole } from "./interfaces/IAuth";
 import { ErrorToastContainer } from "./components/error/ErrorToast";
@@ -30,7 +32,8 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            {/* <Route path="/userlist" element={<UserList />} />
+            <Route path="/userlist" element={<UserList />} />
+            {/* 
             <Route path="/useredit/:userId" element={<UserEdit />} /> */}
             {/* Protected admin routes */}
             <Route
