@@ -18,7 +18,7 @@ const Navigation: React.FC = () => {
             to="/about"
             className="text-blue-600 hover:text-blue-800 no-underline font-medium transition-colors"
           >
-            About
+            API Test
           </Link>
         </li>
         <li>
