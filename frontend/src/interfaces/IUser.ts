@@ -3,6 +3,8 @@ export interface RegisteredUser {
   username: string;
   email: string;
   role: string;
+  password?: string;
+  confirmPassword?: string;
 }
 
 export interface UserApiResult {

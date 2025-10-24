@@ -32,7 +32,7 @@ const Signup: React.FC = () => {
   const isLoading = useAppSelector(getUsersLoading);
 
   //const { isAuthenticated, error } = useAppSelector(currAuthState);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  //const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Handle successful registration
   //   useEffect(() => {
@@ -43,17 +43,17 @@ const Signup: React.FC = () => {
   //   }, [isAuthenticated, navigate]);
 
   // Clear errors when component mounts
-  useEffect(() => {
-    dispatch(clearError());
-    setSubmitError(null);
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(clearError());
+  //   setSubmitError(null);
+  // }, [dispatch]);
 
   const handleSubmit = async (formData: RegisteredUser): Promise<void> => {
     try {
       // Clear any previous errors
       dispatch(clearError());
 
-      console.log("Signup - dispatching registerUser with:", formData);
+      console.log("🚀 Signup - dispatching registerUser with:", formData);
 
       // 🌐 Calling userSlice.registerUser Thunk → httpService.post("/auth/register", userData)
       const result = await dispatch(registerUser(formData));
@@ -102,7 +102,7 @@ const Signup: React.FC = () => {
   };
 
   // Use error from Redux state or local submit error
-  const displayError = error || submitError || undefined;
+  const displayError = error || undefined;
 
   return (
     <section className="bg-gray-50 dark:bg-gray-900">

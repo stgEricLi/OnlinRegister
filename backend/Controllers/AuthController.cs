@@ -26,6 +26,11 @@ public class AuthController(
         try
         {
             // Validate input
+            // The controller doesn't directly validate the Password and ConfirmPassword fields. 
+            // Instead, it delegates this responsibility to a registerValidator (which is an IValidator<RegisterDto>) that gets injected into the controller.
+            // The validation is handled by the RegisterDtoValidator class using FluentValidation (backend\Validators\RegisterDtoValidator.cs).
+            // And it's registered at Program.cs 
+            // builder.Services.AddScoped<IValidator<RegisterDto>, RegisterDtoValidator>();
             var validationResult = await registerValidator.ValidateAsync(registerDto);
             if (!validationResult.IsValid)
             {

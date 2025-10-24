@@ -130,6 +130,8 @@ const RegisterForm: React.FC<RegisterFormProp> = ({
         username: formData.username,
         email: formData.email,
         role: formData.role,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
       };
       await onSubmit(userData);
     } catch {
