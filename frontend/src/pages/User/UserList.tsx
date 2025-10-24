@@ -10,6 +10,8 @@ import {
   getUsersError,
   getUsersLoading,
   getUsersLastFetch,
+  clearSelectedUser,
+  setSelectedUser,
   clearError,
 } from "../../store/slices/userSlice";
 
@@ -59,6 +61,9 @@ const UserList: React.FC = () => {
     //    onUserSelect(user);
     //  } else {
     //    // Default behavior - navigate to user management with selected user
+    dispatch(clearSelectedUser());
+    console.log("UserList - Selected User: ", user);
+    dispatch(setSelectedUser(user)); // Update selectedUser at userSlice
     navigate(`/useredit/${user.id}`);
     //  }
   };
@@ -89,7 +94,7 @@ const UserList: React.FC = () => {
 
                 {/* Name */}
                 <div className="user-created">
-                  <span>{user.userName}</span>
+                  <span>{user.username}</span>
                 </div>
 
                 {/* Button */}

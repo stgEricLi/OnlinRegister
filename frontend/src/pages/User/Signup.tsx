@@ -1,19 +1,37 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../store/hooks";
-import RegisterForm from "../components/user/RegisterForm";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import RegisterForm from "../../components/user/RegisterForm";
+// import {
+//   registerUser,
+//   currAuthState,
+//   clearError,
+// } from "../../store/slices/authSlice";
+import errorHandlingService from "../../services/ErrorHandlingService";
+//import type { RegisterRequest } from "../interfaces/IAuth";
+import type { RegisteredUser } from "../../interfaces/IUser";
+
 import {
+  getSingleUser,
+  selectedUser,
+  getUsersLoading,
+  getUsersError,
+  allUsers,
+  setError,
   registerUser,
-  currAuthState,
   clearError,
-} from "../store/slices/authSlice";
-import errorHandlingService from "../services/ErrorHandlingService";
-import type { RegisterRequest } from "../interfaces/IAuth";
+  updateUser,
+} from "../../store/slices/userSlice";
 
 const Signup: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { isAuthenticated, error } = useAppSelector(currAuthState);
+
+  // Get error message from store
+  const error = useAppSelector(getUsersError);
+  const isLoading = useAppSelector(getUsersLoading);
+
+  //const { isAuthenticated, error } = useAppSelector(currAuthState);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Handle successful registration
@@ -30,21 +48,21 @@ const Signup: React.FC = () => {
     setSubmitError(null);
   }, [dispatch]);
 
-  const handleSubmit = async (formData: RegisterRequest): Promise<void> => {
+  const handleSubmit = async (formData: RegisteredUser): Promise<void> => {
     try {
       // Clear any previous errors
-      setSubmitError(null);
       dispatch(clearError());
 
       console.log("Signup - dispatching registerUser with:", formData);
 
-      // Dispatch the register action: authSlice.registerUser thunk -> httpService (Error handled here)
+      // 🌐 Calling userSlice.registerUser Thunk → httpService.post("/auth/register", userData)
       const result = await dispatch(registerUser(formData));
 
       // Check if registration was rejected
       if (registerUser.rejected.match(result)) {
         const errorMessage = result.payload || "Registration failed";
-        setSubmitError(errorMessage);
+        // Update Error Message in Store
+        dispatch(setError(errorMessage));
 
         // Handle error with ErrorHandlingService
         errorHandlingService.handleError(errorMessage, {
@@ -64,7 +82,7 @@ const Signup: React.FC = () => {
 
       // Handle different types of errors
       if (error instanceof Error) {
-        setSubmitError(error.message);
+        dispatch(setError(error.message)); // Update Error Message in Store
         errorHandlingService.handleError(error, {
           component: "Signup",
           action: "register",
@@ -72,13 +90,12 @@ const Signup: React.FC = () => {
       } else {
         const fallbackError =
           "An unexpected error occurred during registration";
-        setSubmitError(fallbackError);
+        dispatch(setError(fallbackError)); // Update Error Message in Store
         errorHandlingService.handleError(fallbackError, {
           component: "Signup",
           action: "register",
         });
       }
-
       // Re-throw to let RegisterForm know submission failed
       throw error;
     }

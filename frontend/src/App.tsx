@@ -9,10 +9,11 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Order from "./pages/Order";
-import Signup from "./pages/Signup";
+import Signup from "./pages/User/Signup";
 //import NotFound from "./pages/NotFound";
 import Login from "./components/login/Login";
 import UserList from "./pages/User/UserList";
+import UserEdit from "./pages/User/UserEdit";
 
 import { ProtectedRoute } from "./components/nav/ProtectedRoute";
 import { UserRole } from "./interfaces/IAuth";
@@ -33,8 +34,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/userlist" element={<UserList />} />
-            {/* 
-            <Route path="/useredit/:userId" element={<UserEdit />} /> */}
+            <Route path="/useredit/:userId" element={<UserEdit />} />
             {/* Protected admin routes */}
             <Route
               path="/order"

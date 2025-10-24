@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using OnlineRegister.Interfaces;
+using OnlineRegister.DTOs;
 
 namespace OnlineRegister.Controllers;
 
@@ -12,6 +13,7 @@ public class UsersController(IUserService userService, ILogger<UsersController> 
     /// <summary>
     /// Get all users (Admin only)
     /// Check Policy at AuthorizationHandlerExtensions in the RoleAuthorizationHandler.cs
+    /// GET: api/users
     /// </summary>
     /// <returns>List of all active users</returns>
     [HttpGet]
@@ -65,6 +67,7 @@ public class UsersController(IUserService userService, ILogger<UsersController> 
 
     /// <summary>
     /// Get user by ID (Users can access their own data, Managers/Admins can access any user data)
+    /// GET: api/users/{id}
     /// </summary>
     /// <param name="id">User ID</param>
     /// <returns>User information</returns>
@@ -98,6 +101,45 @@ public class UsersController(IUserService userService, ILogger<UsersController> 
         catch (Exception ex)
         {
             logger.LogError(ex, "Error in GetUser endpoint for ID: {UserId}", id);
+            return StatusCode(500, new { Message = "Internal server error" });
+        }
+    }
+
+    /// <summary>
+    /// Update user (Admin only)
+    /// PUT: api/users/{id}
+    /// </summary>
+    /// <param name="id">User ID</param>
+    /// <param name="userData">Updated user data</param>
+    /// <returns>Updated user information</returns>
+    [HttpPut("{id}")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> UpdateUser(string id, [FromBody] UserResponseDto userData)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest(new { Message = "User ID is required" });
+            }
+
+            if (userData == null)
+            {
+                return BadRequest(new { Message = "User data is required" });
+            }
+
+            var updatedUser = await userService.UpdateUserAsync(id, userData);
+
+            if (updatedUser != null)
+            {
+                return Ok(updatedUser);
+            }
+
+            return NotFound(new { Message = "User not found" });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error in UpdateUser endpoint for ID: {UserId}", id);
             return StatusCode(500, new { Message = "Internal server error" });
         }
     }

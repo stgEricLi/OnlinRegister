@@ -1,6 +1,13 @@
 export interface RegisteredUser {
   id: number;
-  userName: string;
+  username: string;
   email: string;
   role: string;
+}
+
+export interface UserApiResult {
+  success: boolean;
+  token: string;
+  user?: RegisteredUser | null;
+  message: string;
 }

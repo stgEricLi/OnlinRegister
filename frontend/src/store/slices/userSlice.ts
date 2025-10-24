@@ -1,12 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import type { ApiError } from "../../interfaces/IHttp";
-import type { RegisteredUser } from "../../interfaces/IUser";
+import type { RegisteredUser, UserApiResult } from "../../interfaces/IUser";
 
 import httpService from "../../services/httpService";
 
 export interface UserState {
   users: RegisteredUser[];
-  currentUserProfile: RegisteredUser | null;
   selectedUser: RegisteredUser | null;
   isLoading: boolean;
   isUpdating: boolean;
@@ -17,7 +16,6 @@ export interface UserState {
 
 const initialState: UserState = {
   users: [],
-  currentUserProfile: null,
   selectedUser: null,
   isLoading: false,
   isUpdating: false,
@@ -67,9 +65,9 @@ export const getSingleUser = createAsyncThunk<
 
 //#region ---- Update User THUNK ----
 export const updateUser = createAsyncThunk<
-  RegisteredUser, // ← Return type on success (This becomes action.payload when successful)
-  { id: string; userData: RegisteredUser }, // ← Input parameter type
-  { rejectValue: string } // ← Rejected value type
+  RegisteredUser, // → Return type on success (This becomes action.payload when successful)
+  { id: string; userData: RegisteredUser }, // → Input parameter type
+  { rejectValue: string } // → Rejected value type
 >("user/updateUser", async ({ id, userData }, { rejectWithValue }) => {
   try {
     console.log(`userSlice - Calling httpService to update a user, id=${id}`);
@@ -87,17 +85,52 @@ export const updateUser = createAsyncThunk<
 });
 //#endregion
 
+//#region ---- Signup THUNK ----
+export const registerUser = createAsyncThunk<
+  UserApiResult, // Return type on success
+  RegisteredUser, // Input parameter type
+  { rejectValue: string } // Rejected value type
+>("Auth/register", async (userData, { rejectWithValue }) => {
+  try {
+    console.log("⏳ userSlice: Calling httpService POST: api/auth/register");
+    // 🌐 Calling API
+    const data: UserApiResult = await httpService.post(
+      "/auth/register",
+      userData
+    );
+    console.log("✅ authSlice: registerUser() response: %O", data);
+
+    if (!data.success) {
+      return rejectWithValue(data.message || "Registration failed");
+    }
+    return data;
+  } catch (error) {
+    const apiError = error as ApiError;
+    return rejectWithValue(apiError.message || "Network error occurred");
+  }
+});
+//#endregion
+
 //#region ---- UserSlice ----
 const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
+    setError: (state, action) => {
+      state.error = action.payload;
+    },
     clearError: (state) => {
       state.error = null;
     },
     clearUsers: (state) => {
       state.users = [];
       state.lastFetch = null;
+    },
+    setSelectedUser: (state, action) => {
+      state.selectedUser = action.payload;
+    },
+    clearSelectedUser: (state) => {
+      state.selectedUser = null;
     },
     resetUserState: () => {
       return initialState;
@@ -165,6 +198,23 @@ const userSlice = createSlice({
         console.log("userSlice - update user failed.");
         state.isLoading = false;
         state.error = action.payload || "Failed to update user";
+      })
+      //#endregion
+
+      //#region Register cases
+      .addCase(registerUser.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.selectedUser = action.payload.user || null;
+        state.error = null;
+      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.selectedUser = null;
+        state.error = action.payload || "Registration failed";
       });
     //#endregion
   },
@@ -176,7 +226,14 @@ const userSlice = createSlice({
 export default userSlice.reducer; // impot to store.ts
 
 // Export actions
-export const { clearError, clearUsers, resetUserState } = userSlice.actions;
+export const {
+  setError,
+  clearError,
+  clearUsers,
+  setSelectedUser,
+  clearSelectedUser,
+  resetUserState,
+} = userSlice.actions;
 
 // A selector is a function that extracts specific pieces of data from the Redux store state.
 // It's a clean way to access nested state properties.

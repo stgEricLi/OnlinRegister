@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import type { RegisterRequest } from "../../interfaces/IAuth";
 import type { RegisteredUser } from "../../interfaces/IUser";
 
 import Input from "../ui/Input";
@@ -8,7 +7,7 @@ import DropMenu from "../ui/DropMenu";
 
 interface RegisterFormProp {
   user?: RegisteredUser;
-  onSubmit: (data: RegisterRequest | RegisteredUser) => Promise<void>;
+  onSubmit: (data: RegisteredUser) => Promise<void>;
   error?: string;
   showRole?: boolean;
 }
@@ -35,7 +34,7 @@ const RegisterForm: React.FC<RegisterFormProp> = ({
   // Form Data state
   const [formData, setFormData] = useState({
     id: 0,
-    userName: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -54,7 +53,7 @@ const RegisterForm: React.FC<RegisterFormProp> = ({
       console.log("pass in user: %O", user);
       setFormData({
         id: user.id || 0,
-        userName: user.userName || "",
+        username: user.username || "",
         email: user.email || "",
         password: "", // Don't populate password for security
         confirmPassword: "", // Don't populate confirm password
@@ -82,11 +81,10 @@ const RegisterForm: React.FC<RegisterFormProp> = ({
   // Form Validation
   const validateForm = (): boolean => {
     const err: FormErrors = {};
-
     // validate user name
-    if (formData.userName.trim().length === 0) {
+    if (formData.username.trim().length === 0) {
       err.username = "Username is required";
-    } else if (/[<>%@^&]/.test(formData.userName)) {
+    } else if (/[<>%@^&]/.test(formData.username)) {
       err.username = "Username cannot contain special characters: < > % @ ^ &";
     }
 
@@ -97,21 +95,19 @@ const RegisterForm: React.FC<RegisterFormProp> = ({
       err.email = "Please enter a valid email address";
     }
 
-    // validate password
-    if (!showRole && formData.password.trim().length === 0) {
-      err.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      err.password = "Password must be at least 6 characters long";
-    }
+    if (!showRole) {
+      // validate password
+      if (formData.password.trim().length === 0) {
+        err.password = "Password is required";
+      } else if (formData.password.length < 6) {
+        err.password = "Password must be at least 6 characters long";
+      }
 
-    // validate confirm password
-    if (
-      !showRole &&
-      formData.password.trim() !== formData.confirmPassword.trim()
-    ) {
-      err.password = "Passwords do not match";
+      // validate confirm password
+      if (formData.password.trim() !== formData.confirmPassword.trim()) {
+        err.password = "Passwords do not match";
+      }
     }
-
     setFormErrors(err);
     return Object.keys(err).length === 0;
   };
@@ -128,7 +124,14 @@ const RegisterForm: React.FC<RegisterFormProp> = ({
 
     try {
       console.log("Form submitted:", formData);
-      await onSubmit(formData);
+      // Create RegisteredUser object with only the required properties
+      const userData: RegisteredUser = {
+        id: formData.id,
+        username: formData.username,
+        email: formData.email,
+        role: formData.role,
+      };
+      await onSubmit(userData);
     } catch {
       // Error handling is managed by parent component
       console.error("Submission error:", error);
@@ -143,9 +146,9 @@ const RegisterForm: React.FC<RegisterFormProp> = ({
       <form onSubmit={handleSubmit}>
         <Input
           label="Username"
-          name="userName"
+          name="username"
           type="text"
-          value={formData.userName}
+          value={formData.username}
           onChange={handleChange}
           error={formErrors.username}
           disabled={isLoading}

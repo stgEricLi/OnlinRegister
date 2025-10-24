@@ -182,6 +182,42 @@ public class UserService(
         }
     }
 
+    public async Task<UserResponseDto?> UpdateUserAsync(string userId, UserResponseDto userData)
+    {
+        try
+        {
+            if (!int.TryParse(userId, out int id))
+            {
+                logger.LogWarning("Invalid user ID format: {UserId}", userId);
+                return null;
+            }
+
+            var user = await context.Users
+                .FirstOrDefaultAsync(u => u.UserID == id);
+
+            if (user == null)
+            {
+                logger.LogWarning("User not found for update: {UserId}", userId);
+                return null;
+            }
+
+            // Update user properties
+            user.Username = userData.Username;
+            user.Email = userData.Email;
+            user.Role = userData.Role;
+
+            await context.SaveChangesAsync();
+
+            logger.LogInformation("User {UserId} updated successfully", userId);
+            return mapper.Map<UserResponseDto>(user);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error occurred while updating user {UserId}", userId);
+            return null;
+        }
+    }
+
     // Password hashing methods using salt (matches your database structure)
     private static string GenerateSalt()
     {
