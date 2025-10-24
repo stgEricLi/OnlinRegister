@@ -45,6 +45,33 @@ export const getAllUsers = createAsyncThunk<
 });
 //#endregion
 
+//#region ---- Refresh User THUNK ----
+export const refreshUsers = createAsyncThunk<
+  RegisteredUser[], // ← Return type on success (This becomes action.payload when successful)
+  void, // ← Input parameter type
+  { rejectValue: string } // ← Rejected value type
+>("user/refresh", async (_, { rejectWithValue, getState }) => {
+  try {
+    // The getState function is a Redux Toolkit utility
+    const state = getState() as { user: UserState };
+    // Only refresh if we have users loaded and it's been more than 30 seconds
+    const now = Date.now();
+    const lastFetch = state.user.lastFetch;
+
+    if (lastFetch && now - lastFetch < 30000) {
+      // Return current users if recently fetched
+      return state.user.users;
+    }
+
+    const users: RegisteredUser[] = await httpService.get("/users");
+    return users;
+  } catch (error) {
+    const apiErr = error as ApiError;
+    return rejectWithValue(apiErr.message || `Failed to refresh users`);
+  }
+});
+//#endregion
+
 //#region ---- Get Single User THUNK ----
 export const getSingleUser = createAsyncThunk<
   RegisteredUser, // ← Return type on success (This becomes action.payload when successful)
@@ -148,8 +175,8 @@ const userSlice = createSlice({
         console.log("userSlice - load users loaded!");
         state.users = action.payload; // check getAllUsers Thunk first type
         state.isLoading = false;
-        state.error = null;
         state.lastFetch = Date.now();
+        state.error = null;
       })
       .addCase(getAllUsers.rejected, (state, action) => {
         console.log("userSlice - load users failed.");
@@ -215,6 +242,21 @@ const userSlice = createSlice({
         state.isLoading = false;
         state.selectedUser = null;
         state.error = action.payload || "Registration failed";
+      })
+      //#endregion
+
+      //#region Refresh users cases
+      .addCase(refreshUsers.pending, (state) => {
+        // Don't set loading for refresh to avoid UI flicker
+        state.error = null;
+      })
+      .addCase(refreshUsers.fulfilled, (state, action) => {
+        state.users = action.payload;
+        state.lastFetch = Date.now();
+        state.error = null;
+      })
+      .addCase(refreshUsers.rejected, (state, action) => {
+        state.error = action.payload || "Failed to refresh users";
       });
     //#endregion
   },
